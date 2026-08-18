@@ -1,0 +1,23 @@
+# joint_limits.yaml
+#
+# 위치 한계는 URDF 가 진실이다 (pitch 0~0.95, yaw ±0.30). 여기서는 속도/가속만 잡는다.
+#
+# 값 근거: MG996R 급 서보의 무부하 속도가 대략 0.15s/60deg = 7 rad/s 인데,
+# 텐던을 당기는 상태에서 그 속도로 움직이면 반동으로 손 전체가 튄다.
+# 3차 세션에서 실제로 쓴 램프 속도가 400 us/s 였고, flex_span 450us 가
+# pitch 0.95rad 에 대응하므로 400us/s ≈ 0.84 rad/s 다.
+# 여기 max_velocity 는 그보다 여유를 두되, 실행 속도는 MoveIt 의
+# velocity_scaling_factor(런치 기본 0.3)로 한 번 더 줄인다.
+
+default_velocity_scaling_factor: 0.3
+default_acceleration_scaling_factor: 0.3
+
+joint_limits:
+  R_Index_Yaw:    {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Index_Pitch:  {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Middle_Yaw:   {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Middle_Pitch: {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Ring_Yaw:     {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Ring_Pitch:   {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Pinky_Yaw:    {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}
+  R_Pinky_Pitch:  {has_velocity_limits: true, max_velocity: 1.5, has_acceleration_limits: true, max_acceleration: 3.0}

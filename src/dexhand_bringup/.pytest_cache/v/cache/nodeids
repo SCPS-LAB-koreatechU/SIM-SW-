@@ -1,0 +1,9 @@
+[
+  "test/test_kinematics.py::test_each_finger_has_exactly_two_dof",
+  "test/test_kinematics.py::test_ik_respects_joint_limits",
+  "test/test_kinematics.py::test_ik_round_trip",
+  "test/test_kinematics.py::test_joint_names_order",
+  "test/test_kinematics.py::test_pitch_direction_is_flexion",
+  "test/test_kinematics.py::test_unreachable_target_reports_residual",
+  "test/test_kinematics.py::test_yaw_direction_is_uniform"
+]

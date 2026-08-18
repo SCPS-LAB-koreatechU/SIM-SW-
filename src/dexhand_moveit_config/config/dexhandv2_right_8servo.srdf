@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  dexhandv2_right_8servo.srdf   (scripts/make_srdf.py 가 생성함 — 직접 고치지 말 것)
+
+  실제로 서보가 달린 8개 관절(손가락 4개 x Yaw/Pitch)만 계획 대상으로 잡는다.
+  Flexor/DIP/엄지는 URDF 단계에서 이미 fixed 이므로 여기서는 다루지 않는다.
+
+  disable_collisions 는 scripts/make_collision_matrix.py 가 원본 삼각형 메시로
+  랜덤 샘플링해 만들었다 (Setup Assistant 와 같은 알고리즘).
+-->
+<robot name="dexhandv2_right_8servo">
+
+  <!-- ===== 계획 그룹 ===== -->
+
+  <!-- 손 전체: 8관절 동시 제어. 프리셋 그립과 관절공간 계획은 이 그룹을 쓴다. -->
+  <group name="hand">
+    <joint name="R_Index_Yaw"/>
+    <joint name="R_Index_Pitch"/>
+    <joint name="R_Middle_Yaw"/>
+    <joint name="R_Middle_Pitch"/>
+    <joint name="R_Ring_Yaw"/>
+    <joint name="R_Ring_Pitch"/>
+    <joint name="R_Pinky_Yaw"/>
+    <joint name="R_Pinky_Pitch"/>
+  </group>
+
+  <!--
+    손가락별 그룹: base_link -> 손끝 프레임 체인.
+    구동 자유도가 2개뿐이라 KDL/LMA 같은 표준 IK 플러그인은 이 체인을 풀지 못한다
+    (3개 위치 구속 vs 2개 자유도 = 과결정계). 그래서 kinematics.yaml 에서 이 그룹들에는
+    IK 플러그인을 붙이지 않았고, 손끝 목표 IK 는 dexhand_bringup 의 fingertip_ik_node 가
+    3x2 자코비안 감쇠최소자승으로 직접 푼다.
+    여기 그룹은 FK, 상태 표시, 손가락 단위 부분 계획용이다.
+  -->
+  <group name="index">
+    <chain base_link="base_link" tip_link="R_Index_tip_frame"/>
+  </group>
+  <group name="middle">
+    <chain base_link="base_link" tip_link="R_Middle_tip_frame"/>
+  </group>
+  <group name="ring">
+    <chain base_link="base_link" tip_link="R_Ring_tip_frame"/>
+  </group>
+  <group name="pinky">
+    <chain base_link="base_link" tip_link="R_Pinky_tip_frame"/>
+  </group>
+
+  <!-- ===== 프리셋 그립 포즈 (config/grip_presets.yaml 에서 생성) ===== -->
+  <!-- 완전 폄 (홈 자세) -->
+  <group_state name="open" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.0000"/>
+  </group_state>
+  <!-- 너클 굽힘 (안전 마진 남긴 파지) -->
+  <group_state name="close" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.8800"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.8800"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.8800"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.8800"/>
+  </group_state>
+  <!-- 최대 굽힘 -->
+  <group_state name="fist" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.9200"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.9200"/>
+  </group_state>
+  <!-- 갈고리 (손잡이 걸기) -->
+  <group_state name="hook" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.9000"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.9000"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.9000"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.9000"/>
+  </group_state>
+  <!-- 부채꼴 벌리기 (yaw 단독 검증용) -->
+  <group_state name="spread" group="hand">
+    <joint name="R_Index_Yaw" value="-0.2800"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="-0.0900"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="0.0900"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="0.2800"/>
+    <joint name="R_Pinky_Pitch" value="0.0000"/>
+  </group_state>
+  <!-- 모으기 (0.10 이 자기충돌 없는 최대치 — 스캔으로 확인) -->
+  <group_state name="together" group="hand">
+    <joint name="R_Index_Yaw" value="0.1000"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="0.0330"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="-0.0330"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="-0.1000"/>
+    <joint name="R_Pinky_Pitch" value="0.0000"/>
+  </group_state>
+  <!-- 검지만 폄 -->
+  <group_state name="count_1" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.9200"/>
+  </group_state>
+  <!-- 검지, 중지 폄 (V, 살짝 벌림) -->
+  <group_state name="count_2" group="hand">
+    <joint name="R_Index_Yaw" value="-0.1600"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="0.1600"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.9200"/>
+  </group_state>
+  <!-- 검지, 중지, 약지 폄 -->
+  <group_state name="count_3" group="hand">
+    <joint name="R_Index_Yaw" value="-0.1000"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="0.1000"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.9200"/>
+  </group_state>
+  <!-- 네 손가락 다 폄 + 벌림 -->
+  <group_state name="count_4" group="hand">
+    <joint name="R_Index_Yaw" value="-0.2000"/>
+    <joint name="R_Index_Pitch" value="0.0000"/>
+    <joint name="R_Middle_Yaw" value="-0.0700"/>
+    <joint name="R_Middle_Pitch" value="0.0000"/>
+    <joint name="R_Ring_Yaw" value="0.0700"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="0.2000"/>
+    <joint name="R_Pinky_Pitch" value="0.0000"/>
+  </group_state>
+  <!-- 원통 파지 (병, 손잡이) -->
+  <group_state name="cylinder_grip" group="hand">
+    <joint name="R_Index_Yaw" value="-0.0400"/>
+    <joint name="R_Index_Pitch" value="0.8500"/>
+    <joint name="R_Middle_Yaw" value="-0.0100"/>
+    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Yaw" value="0.0100"/>
+    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Yaw" value="0.0400"/>
+    <joint name="R_Pinky_Pitch" value="0.8500"/>
+  </group_state>
+  <!-- 웨이브 시작 자세 (t4 테스트 대응) -->
+  <group_state name="wave_ready" group="hand">
+    <joint name="R_Index_Yaw" value="0.0000"/>
+    <joint name="R_Index_Pitch" value="0.7000"/>
+    <joint name="R_Middle_Yaw" value="0.0000"/>
+    <joint name="R_Middle_Pitch" value="0.3500"/>
+    <joint name="R_Ring_Yaw" value="0.0000"/>
+    <joint name="R_Ring_Pitch" value="0.0000"/>
+    <joint name="R_Pinky_Yaw" value="0.0000"/>
+    <joint name="R_Pinky_Pitch" value="0.3500"/>
+  </group_state>
+
+  <!-- ===== 손끝 end effector ===== -->
+  <end_effector name="index_tip" parent_link="R_Index_tip_frame" group="index"/>
+  <end_effector name="middle_tip" parent_link="R_Middle_tip_frame" group="middle"/>
+  <end_effector name="ring_tip" parent_link="R_Ring_tip_frame" group="ring"/>
+  <end_effector name="pinky_tip" parent_link="R_Pinky_tip_frame" group="pinky"/>
+
+  <!-- ===== 월드 고정 ===== -->
+  <virtual_joint name="world_to_hand" type="fixed" parent_frame="world" child_link="base_link"/>
+
+  <!-- ===== 자기충돌 제외 목록 (자동 생성) ===== -->
+    <disable_collisions link1="Index_Knuckle_1" link2="Index_Knuckle_Cross_1" reason="Adjacent"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Index_Middle_1" reason="Adjacent"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Index_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Middle_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Midle_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Index_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Index_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Middle_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Middle_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Middle_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Midle_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Ring_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Knuckle_Cross_1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Index_Middle_1" link2="Index_Tip_1" reason="Adjacent"/>
+    <disable_collisions link1="Index_Middle_1" link2="Middle_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Middle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Middle_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Middle_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Index_Tip_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Middle_Knuckle_Cross_1" reason="Adjacent"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Middle_Middle_1" reason="Adjacent"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Midle_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Middle_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Midle_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Ring_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Knuckle_Cross_1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Midle_Tip_1" reason="Adjacent"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Middle_Middle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Pinky_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Pinky_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Midle_Tip_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Pinky_Knuckle_Cross_1" reason="Adjacent"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Pinky_Middle_1" reason="Adjacent"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Pinky_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Pinky_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Ring_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Knuckle_Cross_1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Pinky_Tip_1" reason="Adjacent"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Middle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Ring_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Ring_Knuckle_Cross_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Pinky_Tip_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Ring_Knuckle_Cross_1" reason="Adjacent"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Ring_Middle_1" reason="Adjacent"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Ring_Middle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Ring_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Knuckle_Cross_1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Ring_Tip_1" reason="Adjacent"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Middle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Middle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="Thumb_Dist_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="Thumb_Knuckle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Ring_Tip_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Thumb_Dist_KC_1" link2="Thumb_Knuckle_1" reason="Adjacent"/>
+    <disable_collisions link1="Thumb_Dist_KC_1" link2="Thumb_Middle_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Dist_KC_1" link2="Thumb_Prox_KC_1" reason="Adjacent"/>
+    <disable_collisions link1="Thumb_Dist_KC_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Dist_KC_1" link2="base_link" reason="Default"/>
+    <disable_collisions link1="Thumb_Knuckle_1" link2="Thumb_Middle_1" reason="Adjacent"/>
+    <disable_collisions link1="Thumb_Knuckle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Knuckle_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Knuckle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Thumb_Middle_1" link2="Thumb_Prox_KC_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Middle_1" link2="Thumb_Tip_1" reason="Adjacent"/>
+    <disable_collisions link1="Thumb_Middle_1" link2="base_link" reason="Never"/>
+    <disable_collisions link1="Thumb_Prox_KC_1" link2="Thumb_Tip_1" reason="Never"/>
+    <disable_collisions link1="Thumb_Prox_KC_1" link2="base_link" reason="Adjacent"/>
+    <disable_collisions link1="Thumb_Tip_1" link2="base_link" reason="Never"/>
+
+</robot>

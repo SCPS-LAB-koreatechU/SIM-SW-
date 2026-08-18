@@ -1,0 +1,14 @@
+moveit_setup_assistant_config:
+  # 이 설정은 Setup Assistant GUI 가 아니라 scripts/ 의 생성 스크립트로 만들었다.
+  # 파일 자체는 moveit_configs_utils 의 MoveItConfigsBuilder 가 기본 경로를
+  # 찾을 때 참조하므로 남겨 둔다.
+  URDF:
+    package: dexhand_moveit_config
+    relative_path: config/dexhandv2_right_8servo.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/dexhandv2_right_8servo.srdf
+  CONFIG:
+    author_name: 김종혁
+    author_email: hexk0131@gmail.com
+    generated_timestamp: 1755475200

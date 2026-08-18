@@ -1,0 +1,25 @@
+# kinematics.yaml
+#
+# hand 그룹(8관절)은 손끝 하나짜리 체인이 아니라 4갈래 트리라서 IK 플러그인이 붙지 않는다.
+# 관절공간 계획(프리셋 그립, 슬라이더)만 쓴다.
+#
+# 손가락 그룹(index/middle/ring/pinky)에도 일부러 IK 플러그인을 붙이지 않았다.
+# 이유: 구동 자유도가 Yaw, Pitch 2개인데 손끝 위치 구속은 3개다. 과결정계라
+# KDL 도 LMA 도 수렴하지 않는다 (position_only_ik: true 를 켜도 마찬가지다.
+# 그 옵션은 자세 3구속을 빼 줄 뿐 위치 3구속은 그대로 남는다).
+#
+# 대신 dexhand_bringup 의 fingertip_ik_node 가 3x2 자코비안 감쇠최소자승으로
+# "도달 가능한 최근접점"을 직접 푼다. 왕복 검증 결과 최대 오차 0.003mm.
+# RViz 의 InteractiveMarker 를 끌면 그 노드가 8관절 목표를 만들어 MoveIt 에 넘긴다.
+#
+# 나중에 굽힘 텐던 서보(PIP/DIP)를 달아 손가락당 자유도가 3개 이상이 되면
+# 그때 아래 주석을 풀고 표준 IK 플러그인을 쓰면 된다.
+
+# index:
+#   kinematics_solver: kdl_kinematics_plugin/KDLKinematicsPlugin
+#   kinematics_solver_search_resolution: 0.005
+#   kinematics_solver_timeout: 0.05
+
+# 주석만 있으면 YAML 이 None 으로 읽혀 launch 가 "Unexpected type for parameter value None" 으로 죽는다.
+# IK 플러그인을 하나도 안 붙이더라도 빈 매핑은 반드시 남겨 둔다.
+{}

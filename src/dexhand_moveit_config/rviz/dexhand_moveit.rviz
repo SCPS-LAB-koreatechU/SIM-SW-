@@ -1,0 +1,119 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+    Property Tree Widget:
+      Expanded: ~
+      Splitter Ratio: 0.5
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 0.05
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Topic:
+        Value: /robot_description
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+      Visual Enabled: true
+      Collision Enabled: false
+      Alpha: 1
+    - Class: rviz_default_plugins/InteractiveMarkers
+      Name: FingertipTargets
+      Enabled: true
+      Interactive Markers Namespace: /dexhand_fingertip_targets
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+    - Class: rviz_default_plugins/InteractiveMarkers
+      Name: GripMenu
+      Enabled: true
+      Interactive Markers Namespace: /dexhand_grip_menu
+      Show Axes: false
+      Show Descriptions: true
+      Show Visual Aids: false
+    - Class: rviz_default_plugins/MarkerArray
+      Name: IKStatus
+      Enabled: true
+      Namespaces: {}
+      Topic:
+        Value: /dexhand_fingertip_ik/ik_status
+        Depth: 5
+        Durability Policy: Volatile
+        Reliability Policy: Reliable
+    # MotionPlanning 은 Humble 에서 Panel 이 아니라 Display 클래스다.
+    # 이 디스플레이가 켜지면 MotionPlanning 패널(Plan/Execute, Goal State 드롭다운)이 같이 뜬다.
+    - Class: moveit_rviz_plugin/MotionPlanning
+      Name: MotionPlanning
+      Enabled: true
+      Move Group Namespace: ""
+      Robot Description: robot_description
+      Planning Scene Topic: /monitored_planning_scene
+      Planning Request:
+        Planning Group: hand
+        Interactive Marker Size: 0
+        Query Goal State: false
+        Query Start State: false
+        Show Workspace: false
+      Planning Metrics:
+        Payload: 1
+        Show Joint Torques: false
+        Show Manipulability: false
+        Show Manipulability Index: false
+        Show Weight Limit: false
+      Planned Path:
+        Loop Animation: false
+        Show Robot Collision: false
+        Show Robot Visual: true
+        Show Trail: false
+        State Display Time: 0.05 s
+        Trajectory Topic: /display_planned_path
+      Scene Geometry:
+        Scene Alpha: 0.9
+        Show Scene Geometry: true
+      Scene Robot:
+        Robot Alpha: 0.5
+        Show Robot Collision: false
+        Show Robot Visual: false
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: false
+      Marker Scale: 0.03
+      Show Names: true
+  Global Options:
+    Background Color: 40; 42; 48
+    Fixed Frame: base_link
+    Frame Rate: 30
+  Tools:
+    # Interact 가 없으면 인터랙티브 마커(손끝 구, 프리셋 큐브)를 아예 잡을 수 없다.
+    # 클릭이 전부 카메라 조작으로 간다. 기본 도구로 둔다 (Current Tool).
+    - Class: rviz_default_plugins/Interact
+      Hide Inactive Objects: true
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+      Line color: 128; 128; 0
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Name: Current View
+      Distance: 0.45
+      Focal Point: {X: 0.03, Y: 0, Z: 0.12}
+      Pitch: 0.35
+      Yaw: 2.2
+      Target Frame: <Fixed Frame>
+Window Geometry:
+  Height: 950
+  Width: 1600
+  Displays: {collapsed: false}
+  MotionPlanning: {collapsed: false}
+  MotionPlanning - Trajectory Slider: {collapsed: false}

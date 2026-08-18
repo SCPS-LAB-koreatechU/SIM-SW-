@@ -1,0 +1,79 @@
+# servo_map.yaml — ROS 관절값(rad) <-> DexHand 펌웨어 스트림 명령 매핑
+#
+# 중요: 서보의 최종 진실(min/max/neutral/부호/스팬)은 아두이노 EEPROM 쪽이다.
+# PC 는 정규화된 flex/yaw 만 보내고, us 환산과 클램핑, 램프, 워치독은 펌웨어가 한다.
+# 여기 적힌 servo_cal 은 두 가지 용도로만 쓴다.
+#   1) 오프라인 검사 (scripts/check_presets.py 의 서보 포화 검사)
+#   2) 접속 시 펌웨어가 echo 하는 dump 와 비교해 불일치를 경고
+# 따라서 EEPROM 을 다시 캘리브레이션하면 이 파일도 같이 고쳐야 한다.
+#
+# 아래 값은 2026-08-11 3차 세션에서 실측해 EEPROM 에 저장된 값이다.
+
+dexhand_driver:
+  ros__parameters:
+
+    # ---------- 통신 ----------
+    # link: "serial" | "tcp" | "none"
+    #   serial : 리눅스에서 아두이노가 직접 꽂혀 있을 때 (/dev/ttyACM0 등)
+    #   tcp    : 아두이노가 Windows PC 에 있고 tools/serial_bridge_win.py 로 중계할 때
+    #   none   : 드라이런. 실물 없이 RViz 만 볼 때
+    link: "none"
+    serial_port: "/dev/ttyACM0"
+    baud: 115200
+    tcp_host: "192.168.0.20"
+    tcp_port: 5555
+
+    # ---------- 스트리밍 ----------
+    # 펌웨어 워치독: 0.4초 무패킷 -> 정지, 2초 -> 출력 차단.
+    # 여유 있게 50Hz 로 계속 보낸다. 목표가 안 바뀌어도 계속 보내야 워치독이 안 문다.
+    stream_rate_hz: 50.0
+    joint_state_rate_hz: 50.0
+
+    # 고해상도 스트림 명령 'w' (-1000..1000) 사용 여부.
+    # false 면 구버전 'v' (-100..100). 펌웨어를 안 올렸으면 false 로 둔다.
+    # 2026-08-18 실물 보드 dump 확인: 구버전 펌웨어(ping/w 명령 없음, flexSpan=200 yawSpan=15).
+    # rev.4(firmware/DexHand_Hand8.ino) 를 올린 뒤 true 로 되돌리고 fspan 450 / yspan 150 을 맞춘다.
+    use_high_res_stream: false
+
+    # ---------- 관절 -> 정규화 명령 ----------
+    # 이 두 값은 URDF 의 조인트 한계와 반드시 같아야 한다.
+    # "flex 명령 최대(=flex_span_us 만큼 서보가 움직였을 때) 실제로 나오는 MCP 각도"라는 뜻이다.
+    #
+    #   URDF 한계  ==  pitch_max_rad  <->  flex_span_us  (서보 스팬)
+    #
+    # 셋 중 하나만 고치면 GUI 각도와 실제 손 모양이 어긋난다. 항상 같이 고쳐라.
+    # 0.95 rad(54deg)은 잠정값이다. 실측 절차는 가이드의 "가동범위 캘리브레이션" 참고.
+    # 원본 CAD 한계는 pitch 1.308997(75deg), yaw 0.349066(20deg).
+    pitch_max_rad: 0.95
+    yaw_max_rad: 0.30
+
+    # 펌웨어의 fspan/yspan (us). 두 값의 합이 아래 room 중 최솟값(630us)을 넘으면
+    # 실물에서 조용히 clamp 된다. 450+150=600 <= 630 이라 안전하다.
+    flex_span_us: 450
+    yaw_span_us: 150
+
+    # ROS 부호와 실물 부호가 반대일 때 뒤집는다. 펌웨어 부호를 건드리지 않고
+    # PC 쪽에서만 바꿀 수 있게 남겨 둔 스위치다. 손가락 순서 Index, Middle, Ring, Pinky.
+    flex_dir: [1.0, 1.0, 1.0, 1.0]
+    yaw_dir:  [1.0, 1.0, 1.0, 1.0]
+
+    # ---------- 안전 ----------
+    # 궤적 실행 시 관절 속도 상한 (rad/s). 서보가 못 따라오면 텐던이 튄다.
+    max_joint_speed: 2.0
+    # 기동 직후 출력을 자동으로 켤지. 기본은 끔 — 사람이 enable 서비스를 불러야 한다.
+    auto_enable_output: false
+
+    # ---------- 펌웨어 EEPROM 미러 (검증 전용) ----------
+    # 주의: servo_cal 은 ROS 파라미터 타입이 아니다(딕셔너리 리스트). 이 파일을 --params-file 로
+    # 직접 넘기면 rcl 이 거부한다. 런치(dexhand_moveit.launch.py)가 이 두 키를 빼고 넘긴다.
+    servo_names: ["FON", "FII", "MON", "MIN", "ROI", "RII", "LON", "LII"]
+    # 손가락 f 의 Outward = CH f*2, Inward = CH f*2+1
+    servo_cal:
+      - {min: 800, max: 2200, neutral: 1500, flex_sign: -1, yaw_sign: 1}   # 0 FON 검지 Out
+      - {min: 800, max: 2200, neutral: 1500, flex_sign:  1, yaw_sign: 1}   # 1 FII 검지 In
+      - {min: 800, max: 2200, neutral: 1500, flex_sign: -1, yaw_sign: 1}   # 2 MON 중지 Out
+      - {min: 800, max: 2200, neutral: 1570, flex_sign:  1, yaw_sign: 1}   # 3 MIN 중지 In  (room 630us, 전체 병목)
+      - {min: 800, max: 2200, neutral: 1540, flex_sign: -1, yaw_sign: 1}   # 4 ROI 약지 Out (room 660us)
+      - {min: 800, max: 2200, neutral: 1500, flex_sign:  1, yaw_sign: 1}   # 5 RII 약지 In
+      - {min: 800, max: 2200, neutral: 1500, flex_sign: -1, yaw_sign: 1}   # 6 LON 소지 Out
+      - {min: 800, max: 2200, neutral: 1500, flex_sign:  1, yaw_sign: 1}   # 7 LII 소지 In

@@ -1,0 +1,55 @@
+# ompl_planning.yaml  (ROS 2 Humble / MoveIt 2 형식)
+#
+# 8자유도 관절공간이라 계획 자체는 쉽다. 어려운 건 손가락끼리의 자기충돌뿐이다.
+# RRTConnect 로 충분하다.
+#
+# 주의: Jazzy 이상에서는 키 이름이 바뀌었다 (planning_plugins / response_adapters 복수형).
+#       Humble 을 쓰기로 했으므로 아래는 Humble 형식이다.
+
+planning_plugin: ompl_interface/OMPLPlanner
+
+request_adapters: >-
+  default_planner_request_adapters/AddTimeOptimalParameterization
+  default_planner_request_adapters/ResolveConstraintFrames
+  default_planner_request_adapters/FixWorkspaceBounds
+  default_planner_request_adapters/FixStartStateBounds
+  default_planner_request_adapters/FixStartStateCollision
+  default_planner_request_adapters/FixStartStatePathConstraints
+
+start_state_max_bounds_error: 0.05
+
+planner_configs:
+  RRTConnectkConfigDefault:
+    type: geometric::RRTConnect
+    range: 0.0
+  RRTstarkConfigDefault:
+    type: geometric::RRTstar
+    range: 0.0
+    goal_bias: 0.05
+    delay_collision_checking: 1
+
+hand:
+  planner_configs:
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+  default_planner_config: RRTConnectkConfigDefault
+  # 자기충돌 검사 대상이 37쌍뿐이라 조밀하게 잡아도 부담이 없다.
+  # 손가락 사이 여유가 밀리미터 단위라 성기게 잡으면 통과해 버린다.
+  longest_valid_segment_fraction: 0.005
+
+index:
+  planner_configs: [RRTConnectkConfigDefault]
+  default_planner_config: RRTConnectkConfigDefault
+  longest_valid_segment_fraction: 0.005
+middle:
+  planner_configs: [RRTConnectkConfigDefault]
+  default_planner_config: RRTConnectkConfigDefault
+  longest_valid_segment_fraction: 0.005
+ring:
+  planner_configs: [RRTConnectkConfigDefault]
+  default_planner_config: RRTConnectkConfigDefault
+  longest_valid_segment_fraction: 0.005
+pinky:
+  planner_configs: [RRTConnectkConfigDefault]
+  default_planner_config: RRTConnectkConfigDefault
+  longest_valid_segment_fraction: 0.005
