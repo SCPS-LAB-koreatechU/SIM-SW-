@@ -120,7 +120,7 @@ ServoCal servoCal[NUM_SERVOS] = {
 };
 
 // ROS 드라이버(servo_map.yaml)의 flex_span_us / yaw_span_us 와 반드시 같아야 한다.
-int flexSpanUs = 450;
+int flexSpanUs = 480;
 int yawSpanUs  = 150;
 int speedUsPerSec = 400;
 
