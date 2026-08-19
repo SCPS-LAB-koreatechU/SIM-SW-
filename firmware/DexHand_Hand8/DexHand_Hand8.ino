@@ -5,7 +5,7 @@
  * 대상: Arduino Mega ADK(Mega 2560 계열) + PCA9685 + 외부 5V SMPS
  *
  * ── rev.4 변경점 (ROS 2 / MoveIt GUI 연동을 위해) ─────────────────────
- *  1) fspan / yspan 상한을 200us -> 700us 로 확장.
+ *  1) fspan / yspan 상한을 200us -> 700us 로 확장. (2026-08-19: 1000us 로 재확장, 중립 1900 체계)
  *     3차 세션에서 실측한 여유(room)가 채널당 630~700us 인데 상한이 200us 로
  *     하드코딩되어 있어서 `fspan 450` 을 보내도 조용히 200 으로 잘렸다.
  *     파지에 필요한 350~500us 를 쓸 수 없던 원인이다.
@@ -64,7 +64,7 @@ constexpr uint8_t SERVOS_PER_FINGER = 2;      // Outward, Inward
 constexpr uint8_t NUM_SERVOS = NUM_FINGERS * SERVOS_PER_FINGER;  // 8
 
 // 3차 세션에서 8채널 전부 800~2200us 구동을 실물로 확인했다.
-constexpr int HARD_MIN_US = 800;
+constexpr int HARD_MIN_US = 800;   // ES3352 스펙 800~2200us (2026-08-19 실측: 750 이하는 끝단 고정)
 constexpr int HARD_MAX_US = 2200;
 constexpr int START_US = 1500;
 
@@ -73,7 +73,7 @@ constexpr int CMD_FULL = 1000;
 
 // span 상한. 실측 여유(room)의 최솟값이 630us 이므로 그보다 크게 잡되,
 // fspan+yspan 이 room 을 넘으면 clamp 된다는 건 `room` 명령으로 확인한다.
-constexpr int SPAN_MAX_US = 700;
+constexpr int SPAN_MAX_US = 1000;
 
 // 논블로킹 모션 엔진
 constexpr uint8_t MOTION_TICK_MS = 10;        // 10ms 주기로 목표를 향해 이동
@@ -105,22 +105,27 @@ struct CalStore {
 
 constexpr uint32_t CAL_MAGIC = 0xDE8A0802UL;  // rev.3 이후 레이아웃
 
-// 2026-08-11 3차 세션 실측값.
-// 핵심: flexSign 이 원본 DexHand 명명 규칙과 정반대다. 전 채널 Outward=-1, Inward=+1.
+// 2026-08-19 텐던 장착 후 실측 (4손가락 전부 동일 패턴):
+//   - 두 서보 모두 "낮은 us = 텐던 당김". 굽힘(flex+) = 둘 다 내려감 -> flexSign 전 채널 -1.
+//   - 좌우(yaw) = 차동 -> Outward +1 / Inward -1.
+//   - 중립 1900: 손가락이 곧게 펴지고 텐던이 막 팽팽한 지점. 굽힘은 한 방향(0..+)만 쓰므로
+//     중립을 위쪽 끝 근처에 두어 아래로 1000us(1900->900)를 전부 굽힘 행정으로 쓴다.
+//     ES3352 스펙 800~2200us, 750 이하는 끝단 고정(실측).
+//   - 굽힘 시작 ~1500us, 최대 ~900us(검지 ~90°, 중지/약지는 더 얕음). 800에선 더 안 굽음.
 ServoCal servoCal[NUM_SERVOS] = {
   // minUs, maxUs, neutralUs, flexSign, yawSign
-  {800, 2200, 1500, -1, +1},  // 0 FON  검지 Outward
-  {800, 2200, 1500, +1, +1},  // 1 FII  검지 Inward
-  {800, 2200, 1500, -1, +1},  // 2 MON  중지 Outward
-  {800, 2200, 1570, +1, +1},  // 3 MIN  중지 Inward   room 630us = 전체 병목
-  {800, 2200, 1540, -1, +1},  // 4 ROI  약지 Outward  room 660us
-  {800, 2200, 1500, +1, +1},  // 5 RII  약지 Inward
-  {800, 2200, 1500, -1, +1},  // 6 LON  소지 Outward
-  {800, 2200, 1500, +1, +1},  // 7 LII  소지 Inward
+  {800, 2200, 1900, -1, +1},  // 0 FON  검지 Outward
+  {800, 2200, 1900, -1, -1},  // 1 FII  검지 Inward
+  {800, 2200, 1900, -1, +1},  // 2 MON  중지 Outward
+  {800, 2200, 1900, -1, -1},  // 3 MIN  중지 Inward
+  {800, 2200, 1900, -1, +1},  // 4 ROI  약지 Outward
+  {800, 2200, 1900, -1, -1},  // 5 RII  약지 Inward
+  {800, 2200, 1900, -1, +1},  // 6 LON  소지 Outward
+  {800, 2200, 1900, -1, -1},  // 7 LII  소지 Inward
 };
 
 // ROS 드라이버(servo_map.yaml)의 flex_span_us / yaw_span_us 와 반드시 같아야 한다.
-int flexSpanUs = 480;
+int flexSpanUs = 950;   // 1900-950-150 = 800 = HARD_MIN: 최대 굽힘+최대 yaw 에서도 clamp 없음
 int yawSpanUs  = 150;
 int speedUsPerSec = 400;
 
@@ -349,34 +354,34 @@ void printHandState() {
 }
 
 // ================= 여유(room) 점검 =================
-// 중립 기준 양쪽 여유 = min(max-neutral, neutral-min).
-// flexSpan+yawSpan 이 이 값을 넘으면 명령이 조용히 clamp 되어
-// GUI 가 보여주는 각도와 실제 손 모양이 어긋난다.
+// flex 는 한 방향(0..+CMD_FULL)만 쓴다(ROS/URDF 하한 0). 따라서
+//   굽힘 방향(flexSign 쪽)  여유 >= flexSpan + yawSpan
+//   반대 방향              여유 >= yawSpan
+// 를 만족하면 clamp 없음. 넘으면 명령이 조용히 잘려 GUI 각도와 실제 손이 어긋난다.
 void printRoom() {
-  Serial.println(F("--- headroom (neutral 기준) ---"));
-  int worst = 32767;
+  Serial.println(F("--- headroom (neutral 기준, flex 는 0..+ 한 방향) ---"));
+  bool anyClamp = false;
   for (uint8_t i = 0; i < NUM_SERVOS; i++) {
     const ServoCal &c = servoCal[i];
     const int up = c.maxUs - c.neutralUs;
     const int dn = c.neutralUs - c.minUs;
-    const int room = min(up, dn);
-    if (room < worst) worst = room;
+    const int flexSide  = (c.flexSign < 0) ? dn : up;   // +flex 가 향하는 쪽
+    const int otherSide = (c.flexSign < 0) ? up : dn;
+    const bool clamp = (flexSpanUs + yawSpanUs > flexSide) || (yawSpanUs > otherSide);
+    if (clamp) anyClamp = true;
     Serial.print(F("  "));
     printServoName(i);
     Serial.print(F("  up=")); Serial.print(up);
     Serial.print(F(" down=")); Serial.print(dn);
-    Serial.print(F(" room=")); Serial.print(room);
-    if (flexSpanUs + yawSpanUs > room) Serial.print(F("  << CLAMP"));
+    Serial.print(F(" flexSide=")); Serial.print(flexSide);
+    Serial.print(F(" need=")); Serial.print(flexSpanUs + yawSpanUs);
+    if (clamp) Serial.print(F("  << CLAMP"));
     Serial.println();
   }
-  Serial.print(F("  need fspan+yspan = "));
-  Serial.print(flexSpanUs + yawSpanUs);
-  Serial.print(F("us, worst room = "));
-  Serial.print(worst);
-  Serial.println(F("us"));
-  if (flexSpanUs + yawSpanUs > worst) {
-    Serial.println(F("  WARNING: 일부 채널에서 명령이 잘린다. span 을 줄이거나 중립을 옮겨라."));
-  }
+  Serial.print(F("  fspan=")); Serial.print(flexSpanUs);
+  Serial.print(F(" yspan=")); Serial.print(yawSpanUs);
+  Serial.println(anyClamp ? F("  WARNING: 일부 채널에서 명령이 잘린다. span 을 줄이거나 중립을 옮겨라.")
+                          : F("  OK (clamp 없음)"));
 }
 
 // ================= 동작 테스트 엔진 =================

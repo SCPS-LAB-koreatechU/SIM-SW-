@@ -122,12 +122,17 @@ def main():
     else:
         print("   [ ok ] URDF 한계와 servo_map 일치")
 
-    rooms = [min(c["max"] - c["neutral"], c["neutral"] - c["min"])
-             for c in cfg["servo_cal"]]
+    # flex 는 0..+ 한 방향만 쓴다(URDF 하한 0). 굽힘쪽 여유 >= fspan+yspan, 반대쪽 >= yspan.
     need = cfg["flex_span_us"] + cfg["yaw_span_us"]
-    print(f"   span 합계 {need}us vs 채널별 여유 최솟값 {min(rooms)}us "
-          f"({'ok' if need <= min(rooms) else 'CLAMP 발생'})")
-    if need > min(rooms):
+    bad = []
+    for ch, c in enumerate(cfg["servo_cal"]):
+        up, dn = c["max"] - c["neutral"], c["neutral"] - c["min"]
+        flex_side, other = (dn, up) if c["flex_sign"] < 0 else (up, dn)
+        if need > flex_side or cfg["yaw_span_us"] > other:
+            bad.append(f"CH{ch}")
+    print(f"   span 합계 {need}us (굽힘쪽) / yaw {cfg['yaw_span_us']}us (반대쪽) vs 채널별 여유 "
+          f"({'ok' if not bad else 'CLAMP 발생 ' + ','.join(bad)})")
+    if bad:
         fails += 1
 
     for name, p in presets.items():

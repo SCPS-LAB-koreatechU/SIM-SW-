@@ -448,28 +448,28 @@
     <parent link="Index_Knuckle_Cross_1"/>
     <child link="Index_Knuckle_1"/>
     <axis xyz="0.087537 0.996161 -0.000428"/>
-    <limit effort="1.5" lower="0.0" upper="0.950000" velocity="3.0"/>
+    <limit effort="1.5" lower="0.0" upper="1.100000" velocity="3.0"/>
   </joint>
   <joint name="R_Middle_Pitch" type="revolute">
     <origin rpy="0 0 0" xyz="-0.0075 0.0048 0.004"/>
     <parent link="Middle_Knuckle_Cross_1"/>
     <child link="Middle_Knuckle_1"/>
     <axis xyz="-0.0 1.0 0.0"/>
-    <limit effort="1.5" lower="0.0" upper="0.950000" velocity="3.0"/>
+    <limit effort="1.5" lower="0.0" upper="1.100000" velocity="3.0"/>
   </joint>
   <joint name="R_Ring_Pitch" type="revolute">
     <origin rpy="0 0 0" xyz="-0.007904 0.004129 0.003972"/>
     <parent link="Ring_Knuckle_Cross_1"/>
     <child link="Ring_Knuckle_1"/>
     <axis xyz="-0.08702 0.996207 -0.00031"/>
-    <limit effort="1.5" lower="0.0" upper="0.950000" velocity="3.0"/>
+    <limit effort="1.5" lower="0.0" upper="1.100000" velocity="3.0"/>
   </joint>
   <joint name="R_Pinky_Pitch" type="revolute">
     <origin rpy="0 0 0" xyz="-0.008147 0.003385 0.004177"/>
     <parent link="Pinky_Knuckle_Cross_1"/>
     <child link="Pinky_Knuckle_1"/>
     <axis xyz="-0.178318 0.983965 0.003854"/>
-    <limit effort="1.5" lower="0.0" upper="0.950000" velocity="3.0"/>
+    <limit effort="1.5" lower="0.0" upper="1.100000" velocity="3.0"/>
   </joint>
   <joint name="R_Index_Flexor" type="fixed">
     <origin rpy="0 0 0" xyz="-0.003532 0.002993 0.045018"/>

@@ -60,35 +60,35 @@
   <!-- 너클 굽힘 (안전 마진 남긴 파지) -->
   <group_state name="close" group="hand">
     <joint name="R_Index_Yaw" value="0.0000"/>
-    <joint name="R_Index_Pitch" value="0.8800"/>
+    <joint name="R_Index_Pitch" value="1.0000"/>
     <joint name="R_Middle_Yaw" value="0.0000"/>
-    <joint name="R_Middle_Pitch" value="0.8800"/>
+    <joint name="R_Middle_Pitch" value="1.0000"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
-    <joint name="R_Ring_Pitch" value="0.8800"/>
+    <joint name="R_Ring_Pitch" value="1.0000"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.8800"/>
+    <joint name="R_Pinky_Pitch" value="0.9000"/>
   </group_state>
   <!-- 최대 굽힘 -->
   <group_state name="fist" group="hand">
     <joint name="R_Index_Yaw" value="0.0000"/>
-    <joint name="R_Index_Pitch" value="0.9200"/>
+    <joint name="R_Index_Pitch" value="1.0500"/>
     <joint name="R_Middle_Yaw" value="0.0000"/>
-    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Middle_Pitch" value="1.0500"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
-    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Pitch" value="1.0500"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Pitch" value="0.9500"/>
   </group_state>
   <!-- 갈고리 (손잡이 걸기) -->
   <group_state name="hook" group="hand">
     <joint name="R_Index_Yaw" value="0.0000"/>
-    <joint name="R_Index_Pitch" value="0.9000"/>
+    <joint name="R_Index_Pitch" value="1.0300"/>
     <joint name="R_Middle_Yaw" value="0.0000"/>
-    <joint name="R_Middle_Pitch" value="0.9000"/>
+    <joint name="R_Middle_Pitch" value="1.0300"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
-    <joint name="R_Ring_Pitch" value="0.9000"/>
+    <joint name="R_Ring_Pitch" value="1.0300"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.9000"/>
+    <joint name="R_Pinky_Pitch" value="0.9300"/>
   </group_state>
   <!-- 부채꼴 벌리기 (yaw 단독 검증용) -->
   <group_state name="spread" group="hand">
@@ -117,11 +117,11 @@
     <joint name="R_Index_Yaw" value="0.0000"/>
     <joint name="R_Index_Pitch" value="0.0000"/>
     <joint name="R_Middle_Yaw" value="0.0000"/>
-    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Middle_Pitch" value="1.0500"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
-    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Pitch" value="1.0500"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Pitch" value="0.9500"/>
   </group_state>
   <!-- 검지, 중지 폄 (V, 살짝 벌림) -->
   <group_state name="count_2" group="hand">
@@ -130,9 +130,9 @@
     <joint name="R_Middle_Yaw" value="0.1600"/>
     <joint name="R_Middle_Pitch" value="0.0000"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
-    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Pitch" value="1.0500"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Pitch" value="0.9500"/>
   </group_state>
   <!-- 검지, 중지, 약지 폄 -->
   <group_state name="count_3" group="hand">
@@ -143,7 +143,7 @@
     <joint name="R_Ring_Yaw" value="0.1000"/>
     <joint name="R_Ring_Pitch" value="0.0000"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.9200"/>
+    <joint name="R_Pinky_Pitch" value="0.9500"/>
   </group_state>
   <!-- 네 손가락 다 폄 + 벌림 -->
   <group_state name="count_4" group="hand">
@@ -159,24 +159,24 @@
   <!-- 원통 파지 (병, 손잡이) -->
   <group_state name="cylinder_grip" group="hand">
     <joint name="R_Index_Yaw" value="-0.0400"/>
-    <joint name="R_Index_Pitch" value="0.8500"/>
+    <joint name="R_Index_Pitch" value="0.9700"/>
     <joint name="R_Middle_Yaw" value="-0.0100"/>
-    <joint name="R_Middle_Pitch" value="0.9200"/>
+    <joint name="R_Middle_Pitch" value="1.0500"/>
     <joint name="R_Ring_Yaw" value="0.0100"/>
-    <joint name="R_Ring_Pitch" value="0.9200"/>
+    <joint name="R_Ring_Pitch" value="1.0500"/>
     <joint name="R_Pinky_Yaw" value="0.0400"/>
-    <joint name="R_Pinky_Pitch" value="0.8500"/>
+    <joint name="R_Pinky_Pitch" value="0.8700"/>
   </group_state>
   <!-- 웨이브 시작 자세 (t4 테스트 대응) -->
   <group_state name="wave_ready" group="hand">
     <joint name="R_Index_Yaw" value="0.0000"/>
-    <joint name="R_Index_Pitch" value="0.7000"/>
+    <joint name="R_Index_Pitch" value="0.7900"/>
     <joint name="R_Middle_Yaw" value="0.0000"/>
-    <joint name="R_Middle_Pitch" value="0.3500"/>
+    <joint name="R_Middle_Pitch" value="0.4000"/>
     <joint name="R_Ring_Yaw" value="0.0000"/>
     <joint name="R_Ring_Pitch" value="0.0000"/>
     <joint name="R_Pinky_Yaw" value="0.0000"/>
-    <joint name="R_Pinky_Pitch" value="0.3500"/>
+    <joint name="R_Pinky_Pitch" value="0.3600"/>
   </group_state>
 
   <!-- ===== 손끝 end effector ===== -->
