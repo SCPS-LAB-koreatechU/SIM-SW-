@@ -8,7 +8,8 @@
 # 따라서 EEPROM 을 다시 캘리브레이션하면 이 파일도 같이 고쳐야 한다.
 #
 # 아래 값은 2026-08-19 텐던 장착 상태에서 실측해 EEPROM 에 저장된 값이다 (rev.4 펌웨어).
-#   두 서보 모두 낮은 us = 당김 -> flex_sign 전 채널 -1, yaw 는 Out +1 / In -1 차동.
+#   두 서보 모두 낮은 us = 당김 -> flex_sign 전 채널 -1. yaw 차동 부호는 손가락 쌍이 거울상:
+#   검지/중지 Out -1 / In +1, 약지/소지 Out +1 / In -1 (+yaw = 전 손가락 소지쪽, 2026-08-20 실물 확정).
 #   중립 1900 = 손가락 폄·텐던 막 팽팽. 굽힘 0..+ 한 방향만 쓰므로 아래로 950us 전부 행정.
 
 dexhand_driver:
@@ -73,10 +74,10 @@ dexhand_driver:
     servo_names: ["FON", "FII", "MON", "MIN", "ROI", "RII", "LON", "LII"]
     # 손가락 f 의 Outward = CH f*2, Inward = CH f*2+1
     servo_cal:
-      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 0 FON 검지 Out
-      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign: -1}   # 1 FII 검지 In
-      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 2 MON 중지 Out
-      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign: -1}   # 3 MIN 중지 In
+      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign: -1}   # 0 FON 검지 Out
+      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 1 FII 검지 In
+      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign: -1}   # 2 MON 중지 Out
+      - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 3 MIN 중지 In
       - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 4 ROI 약지 Out
       - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign: -1}   # 5 RII 약지 In
       - {min: 800, max: 2200, neutral: 1900, flex_sign: -1, yaw_sign:  1}   # 6 LON 소지 Out
